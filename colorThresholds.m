@@ -5,11 +5,13 @@ close all;
 % image_paths = dir("images");
 % image_paths = image_paths(3:end);
 % original_image = imread("images/" + image_paths(5).name);
-cam = webcam;
-original_image = cam.snapshot();
-original_image = imresize(original_image, 0.5);
+% cam = webcam;
+% original_image = cam.snapshot();
+% original_image = imresize(original_image, 0.5);
 % original_image = imgaussfilt(original_image, 3);
-% original_image = imread("cube.png");
+original_image = imread("cube.png");
+
+imshow(original_image);
 
 edges = edge(rgb2gray(original_image), "canny");
 
@@ -25,10 +27,18 @@ v = image(:,:,3);
 red_mask = h > 0.92 & h < 1 & s > 0.5 & v > 0.2;
 orange_mask = h > 0.04 & h < 0.12 & s > 0.7;
 yellow_mask = h > 0.12 & h < 0.18;
-white_mask =  h > 0.5 & h < 0.7 & v > 0.8;
+white_mask = v > 0.7 & s < 0.4;
 green_mask = h > 0.35 & h < 0.48;
 blue_mask = h > 0.55 & h < 0.65 & s > 0.5;
 black_mask = v < 0.4;
+
+se = strel("square", 25);
+red_mask = imopen(red_mask, se);
+orange_mask = imopen(orange_mask, se);
+yellow_mask = imopen(yellow_mask, se);
+white_mask = imopen(white_mask, se);
+green_mask = imopen(green_mask, se);
+blue_mask = imopen(blue_mask, se);
 
 subplot(3, 4, 1); imshow(original_image); title("original image");
 subplot(3, 4, 2); imshow(hsv2rgb(image)); title("k-means");
@@ -42,5 +52,31 @@ subplot(3, 4, 9); imshow(blue_mask); title("blue mask");
 subplot(3, 4, 10); imshow(black_mask); title("black mask");
 subplot(3, 4, 11); imshow(edges); title("edges");
 
+masks(:,:,1) = red_mask;
+masks(:,:,2) = orange_mask;
+masks(:,:,3) = yellow_mask;
+masks(:,:,4) = white_mask;
+masks(:,:,5) = green_mask;
+masks(:,:,6) = blue_mask;
 
-% imtool(image);
+grid = masksToGrid(masks, ["R", "O", "Y", "W", "G", "B"]);
+grid
+
+function [grid] = masksToGrid(masks, colors) 
+    centroids = zeros(9, 3);
+    counter = 1;
+    for i=1:6
+        cc = bwlabel(masks(:,:,i));
+        for j=1:max(max(cc))
+            [x, y] = find(cc == j);
+            centroids(counter, 1) = mean(x);
+            centroids(counter, 2) = mean(y);
+            centroids(counter, 3) = i;
+            counter = counter + 1;
+        end
+    end
+    centroids = sortrows(centroids, 1:2, ["ascend", "ascend"]);
+    grid = reshape(centroids(:,3), 3, 3);
+    disp(grid);
+    grid = colors(grid)';
+end

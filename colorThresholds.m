@@ -1,87 +1,46 @@
 clear;
 close all;
 
-% original_image = imread("images/WhatsApp Image 2021-02-16 at 7.56.46 PM.jpeg");
-% image_paths = dir("images");
-% image_paths = image_paths(3:end);
-% original_image = imread("images/" + image_paths(5).name);
-% cam = webcam;
-% original_image = cam.snapshot();
-% original_image = imresize(original_image, 0.5);
-% original_image = imgaussfilt(original_image, 3);
 cam = webcam;
-% while true
-%     original_image = cam.snapshot;
-%     original_image = imresize(original_image, 0.3);
-    original_image = imread("cube.png");
-    
-    imshow(original_image);
-    
-    % edges = edge(rgb2gray(original_image), "canny");
+while true
+    original_image = cam.snapshot;
+    original_image = imresize(original_image, 0.3);
+%     original_image = imread("cube.png");
     
     [L,Centers] = imsegkmeans(original_image,13);
     image = label2rgb(L, im2double(Centers));
-    imtool(image);
 
-    indices = kMeansImageToStickerMask(L);
+    stickerMask = kMeansImageToStickerMask(L);
+
+    subplot(2, 2, 1); imshow(original_image); title("original image");
+    subplot(2, 2, 2); imshow(image); title("k-means");
+    subplot(2, 2, 3); imshow(stickerMask); title("sticker mask");
+
     
-    image = rgb2hsv(image); 
-    % imtool(image);
-    h = image(:,:,1);
-    s = image(:,:,2);
-    v = image(:,:,3);
-    
-%     red_mask = h > 0.92 & h < 1 & s > 0.5 & v > 0.2;
-%     orange_mask = h > 0.04 & h < 0.12 & s > 0.7;
-%     yellow_mask = h > 0.12 & h < 0.18;
-%     white_mask = v > 0.7 & s < 0.4;
-%     green_mask = h > 0.35 & h < 0.48;
-%     blue_mask = h > 0.55 & h < 0.65 & s > 0.5;
-%     black_mask = v < 0.4;
-%     
-%     se = strel("square", 25);
-%     red_mask = imopen(red_mask, se);
-%     orange_mask = imopen(orange_mask, se);
-%     yellow_mask = imopen(yellow_mask, se);
-%     white_mask = imopen(white_mask, se);
-%     green_mask = imopen(green_mask, se);
-%     blue_mask = imopen(blue_mask, se);
-%     
-%     subplot(3, 4, 1); imshow(original_image); title("original image");
-%     subplot(3, 4, 2); imshow(hsv2rgb(image)); title("k-means");
-%     subplot(3, 4, 3); imshow(image); title("hsv image");
-%     subplot(3, 4, 4); imshow(red_mask); title("red mask");
-%     subplot(3, 4, 5); imshow(orange_mask); title("orange mask");
-%     subplot(3, 4, 6); imshow(yellow_mask); title("yellow mask");
-%     subplot(3, 4, 7); imshow(white_mask); title("white mask");
-%     subplot(3, 4, 8); imshow(green_mask); title("green mask");
-%     subplot(3, 4, 9); imshow(blue_mask); title("blue mask");
-%     subplot(3, 4, 10); imshow(black_mask); title("black mask");
-% %     subplot(3, 4, 11); imshow(edges); title("edges");
-%     
-%     masks(:,:,1) = red_mask;
-%     masks(:,:,2) = orange_mask;
-%     masks(:,:,3) = yellow_mask;
-%     masks(:,:,4) = white_mask;
-%     masks(:,:,5) = green_mask;
-%     masks(:,:,6) = blue_mask;
-%     
 %     grid = masksToGrid(masks, ["R", "O", "Y", "W", "G", "B", "-"]);
 %     grid
-% end
+end
 
 function [mask] = kMeansImageToStickerMask(L)
+    mask = zeros(size(L, 1), size(L, 2));
     for i=1:max(max(L))
         cc = bwlabel(L==i);
         for j=1:max(max(cc))
-            
             count = sum(sum(cc==j));
-            if count > 4000 && count < 5500 
-                imshow(label2rgb(cc));
-                disp(count)
+%             s = squareness(cc==j);
+%             s=1;
+            if count > 1000 && count < 3000
+                s = squareness(cc==j);
+                if s > .5 && s < 1.3
+                    mask(cc==j) = 1;
+%                     imshow(label2rgb(cc==j));
+                    1;
+                end
+%                 disp(count)
             end
-            
         end
+%         disp("________________");
+%         imshow(label2rgb(cc));
     end
 end
 

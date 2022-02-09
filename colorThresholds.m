@@ -3,22 +3,27 @@ close all;
 
 cam = webcam;
 while true
+%     original_image = imread("our_images/cube3.png");
     original_image = cam.snapshot;
     original_image = imresize(original_image, 0.3);
-%     original_image = imread("cube.png");
     
     [L,Centers] = imsegkmeans(original_image,13);
     image = label2rgb(L, im2double(Centers));
 
+    LSTImage = rgb2lst(image);
+
     stickerMask = kMeansImageToStickerMask(L);
 
-    subplot(2, 2, 1); imshow(original_image); title("original image");
-    subplot(2, 2, 2); imshow(image); title("k-means");
-    subplot(2, 2, 3); imshow(stickerMask); title("sticker mask");
+    onlyStickersImage = cropImage(image, ~stickerMask);
 
-    
-%     grid = masksToGrid(masks, ["R", "O", "Y", "W", "G", "B", "-"]);
-%     grid
+    subplot(2, 3, 1); imshow(original_image); title("original image");
+    subplot(2, 3, 2); imshow(image); title("k-means");
+    subplot(2, 3, 3); imshow(LSTImage); title("LST");
+    subplot(2, 3, 4); imshow(stickerMask); title("sticker mask");
+    subplot(2, 3, 5); imshow(onlyStickersImage); title("only stickers");
+
+    grid = stickersToGrid(bwlabel(stickerMask), LSTImage);
+    grid
 end
 
 function [mask] = kMeansImageToStickerMask(L)
@@ -27,46 +32,36 @@ function [mask] = kMeansImageToStickerMask(L)
         cc = bwlabel(L==i);
         for j=1:max(max(cc))
             count = sum(sum(cc==j));
-%             s = squareness(cc==j);
-%             s=1;
-            if count > 1000 && count < 3000
+            if count > 500 && count < 3000
                 s = squareness(cc==j);
-                if s > .5 && s < 1.3
+                if s > .85 && s < 1.3
                     mask(cc==j) = 1;
-%                     imshow(label2rgb(cc==j));
                     1;
                 end
-%                 disp(count)
             end
         end
-%         disp("________________");
-%         imshow(label2rgb(cc));
     end
 end
 
-function [indices] = CentersToStickerIndices (centers)
-    R = double(centers(:,1));
-    G = double(centers(:,2));
-    B = double(centers(:,3));
-    L = R + G + B;
-    S = R - B;
-    T = R - 2*G + B;
+function [lstImage] = rgb2lst(image)
+    R = double(image(:,:,1))/255;
+    G = double(image(:,:,2))/255;
+    B = double(image(:,:,3))/255;
+    L = (R + G + B) / 3;
+    S = ((R - B) + 1) / 2;
+    T = ((R - 2*G + B) + 2) / 4;
+    lstImage = cat(3, L, S, T);
 end
 
-function [grid] = masksToGrid(masks, colors) 
-    centroids = ones(9, 3)*7;
-    counter = 1;
-    for i=1:6
-        cc = bwlabel(masks(:,:,i));
-        for j=1:max(max(cc))
-            [x, y] = find(cc == j);
-            centroids(counter, 1) = mean(x);
-            centroids(counter, 2) = mean(y);
-            centroids(counter, 3) = i;
-            counter = counter + 1;
-        end
-    end
-    centroids = sortrows(centroids, 1:2, ["ascend", "ascend"]);
-    grid = reshape(centroids(1:9,3), 3, 3);
-    grid = colors(grid)';
+function [croppedImage] = cropImage(image, mask)
+    r = image(:,:,1);
+    g = image(:,:,2);
+    b = image(:,:,3);
+    r(mask==1) = 0;
+    g(mask==1) = 0;
+    b(mask==1) = 0;
+    image(:,:,1) = r;
+    image(:,:,2) = g;
+    image(:,:,3) = b;
+    croppedImage = image;
 end

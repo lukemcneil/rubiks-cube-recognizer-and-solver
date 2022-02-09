@@ -1,10 +1,11 @@
 clear;
 close all;
+addpath(genpath("solving_library"));
 
-cam = webcam;
-while true
-%     original_image = imread("our_images/cube3.png");
-    original_image = cam.snapshot;
+% cam = webcam;
+% while true
+    original_image = imread("our_images/cube3.png");
+%     original_image = cam.snapshot;
     original_image = imresize(original_image, 0.3);
     
     [L,Centers] = imsegkmeans(original_image,13);
@@ -23,8 +24,8 @@ while true
     subplot(2, 3, 5); imshow(onlyStickersImage); title("only stickers");
 
     grid = stickersToGrid(bwlabel(stickerMask), LSTImage);
-    grid
-end
+    subplot(2, 3, 6); showFace(grid);
+% end
 
 function [mask] = kMeansImageToStickerMask(L)
     mask = zeros(size(L, 1), size(L, 2));

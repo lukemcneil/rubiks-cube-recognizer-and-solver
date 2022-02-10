@@ -11,35 +11,41 @@ currentSide = 1;
 global keepLooping;
 keepLooping = true;
 
+global paused;
+paused = false;
+
 set(gcf, 'KeyPressFcn', @keyPressed)
 
 while keepLooping
     drawnow
 
-%     original_image = imread("our_images/cube3.png");
-    original_image = cam.snapshot;
-    original_image = imresize(original_image, 0.3);
+    if ~paused
     
-    [L,Centers] = imsegkmeans(original_image,13);
-    image = label2rgb(L, im2double(Centers));
-
-    LSTImage = rgb2lst(image);
-
-    stickerMask = kMeansImageToStickerMask(L);
-
-    onlyStickersImage = cropImage(image, ~stickerMask);
+    %     original_image = imread("our_images/cube3.png");
+        original_image = cam.snapshot;
+        original_image = imresize(original_image, 0.3);
+        
+        [L,Centers] = imsegkmeans(original_image,13);
+        image = label2rgb(L, im2double(Centers));
     
-    subplot(2, 3, 1); imshow(original_image); title("original image");
-    subplot(2, 3, 2); imshow(image); title("k-means");
-    subplot(2, 3, 3); imshow(LSTImage); title("LST");
-    subplot(2, 3, 4); imshow(stickerMask); title("sticker mask");
-    subplot(2, 3, 5); imshow(onlyStickersImage); title("only stickers");
+        LSTImage = rgb2lst(image);
     
-    grid = stickersToGrid(bwlabel(stickerMask), LSTImage);
-    if grid(1) ~= "-"
-        fullGrid(:,:,currentSide) = grid;
+        stickerMask = kMeansImageToStickerMask(L);
+    
+        onlyStickersImage = cropImage(image, ~stickerMask);
+        
+        subplot(2, 3, 1); imshow(original_image); title("original image");
+        subplot(2, 3, 2); imshow(image); title("k-means");
+        subplot(2, 3, 3); imshow(LSTImage); title("LST");
+        subplot(2, 3, 4); imshow(stickerMask); title("sticker mask");
+        subplot(2, 3, 5); imshow(onlyStickersImage); title("only stickers");
+        
+        grid = stickersToGrid(bwlabel(stickerMask), LSTImage);
+        if grid(1) ~= "-"
+            fullGrid(:,:,currentSide) = grid;
+        end
+        subplot(2, 3, 6); showFace(fullGrid); title("current side: "+currentSide);
     end
-    subplot(2, 3, 6); showFace(fullGrid);
 end
 
 function [mask] = kMeansImageToStickerMask(L)
@@ -85,6 +91,7 @@ end
 function keyPressed(hObject, event)
     global currentSide;
     global keepLooping;
+    global paused;
     switch event.Key
         case 'rightarrow'
             currentSide = min(currentSide+1, 6);
@@ -94,5 +101,7 @@ function keyPressed(hObject, event)
             disp("new current side: " + currentSide);
         case 'return'
             keepLooping = false;
+        case 'space'
+            paused = ~paused;
     end
 end

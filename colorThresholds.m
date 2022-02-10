@@ -33,7 +33,7 @@ addpath(genpath("solving_library"));
         fullGrid(:,:,currentSide) = grid;
     end
     subplot(2, 3, 6); showFace(fullGrid);
-    pressed = input("Press key");
+    pressed = input("Press key", 's');
     if pressed ~="yes"
     else 
         currentSide = currentSide+1;

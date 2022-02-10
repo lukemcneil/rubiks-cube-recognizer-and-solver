@@ -1,4 +1,4 @@
-function showFace(grid)
+function result = showFace(grid)
     colors = ["R" "B" "O" "G" "W" "Y" "-"];
     cube = ones(3, 3, 6) * 7;
     for h=1:6
@@ -9,4 +9,5 @@ function showFace(grid)
         end
     end
     rubplot(cube);
+    result = cube;
 end

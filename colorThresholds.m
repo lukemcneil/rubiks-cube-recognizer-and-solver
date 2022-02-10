@@ -2,15 +2,22 @@ clear;
 close all;
 addpath(genpath("solving_library"));
 
- cam = webcam;
- oldGrid = ["-" "-" "-"; "-" "-" "-"; "-" "-" "-"];
- f = figure;
- fullGrid(1:3,1:3,1:6) = "-";
- fullGrid
- currentSide = 1;
- while true
-%    original_image = imread("our_images/cube3.png");
-     original_image = cam.snapshot;
+cam = webcam;
+fullGrid(1:3,1:3,1:6) = "-";
+
+global currentSide;
+currentSide = 1;
+
+global keepLooping;
+keepLooping = true;
+
+set(gcf, 'KeyPressFcn', @keyPressed)
+
+while keepLooping
+    drawnow
+
+%     original_image = imread("our_images/cube3.png");
+    original_image = cam.snapshot;
     original_image = imresize(original_image, 0.3);
     
     [L,Centers] = imsegkmeans(original_image,13);
@@ -33,12 +40,7 @@ addpath(genpath("solving_library"));
         fullGrid(:,:,currentSide) = grid;
     end
     subplot(2, 3, 6); showFace(fullGrid);
-    pressed = input("Press key", 's');
-    if pressed ~="yes"
-    else 
-        currentSide = currentSide+1;
-    end
- end
+end
 
 function [mask] = kMeansImageToStickerMask(L)
     mask = zeros(size(L, 1), size(L, 2));
@@ -78,4 +80,19 @@ function [croppedImage] = cropImage(image, mask)
     image(:,:,2) = g;
     image(:,:,3) = b;
     croppedImage = image;
+end
+
+function keyPressed(hObject, event)
+    global currentSide;
+    global keepLooping;
+    switch event.Key
+        case 'rightarrow'
+            currentSide = min(currentSide+1, 6);
+            disp("new current side: " + currentSide);
+        case 'leftarrow'
+            currentSide = max(currentSide-1, 1);
+            disp("new current side: " + currentSide);
+        case 'return'
+            keepLooping = false;
+    end
 end

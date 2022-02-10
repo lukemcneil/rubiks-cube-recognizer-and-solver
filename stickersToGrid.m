@@ -32,6 +32,8 @@ function [grid] = stickersToGrid(stickerMask, image)
                 b2 = (color(3) - stickerColors(j, 3))^2;
                 distances(j) = r2+g2+b2;
             end
+            fprintf("Sticker # %d\n",i);
+            disp(distances);
             [~, idx] = min(distances);
             centroids(i, 1) = mean(xs)*3 + mean(ys);
             centroids(i, 2) = mean(ys);

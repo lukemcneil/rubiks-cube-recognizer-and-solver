@@ -3,7 +3,9 @@ close all;
 addpath(genpath("solving_library"));
 
 cam = webcam;
+global cubeToDraw;
 fullGrid(1:3,1:3,1:6) = "-";
+cubeToDraw = fullGrid;
 
 global currentSide;
 currentSide = 1;
@@ -23,7 +25,7 @@ while keepLooping
     
     %     original_image = imread("our_images/cube3.png");
         original_image = cam.snapshot;
-        original_image = imresize(original_image, 0.3);
+        original_image = imresize(original_image, 0.1);
         
         [L,Centers] = imsegkmeans(original_image,13);
         image = label2rgb(L, im2double(Centers));
@@ -43,8 +45,14 @@ while keepLooping
         grid = stickersToGrid(bwlabel(stickerMask), LSTImage);
         if grid(1) ~= "-"
             fullGrid(:,:,currentSide) = grid;
+            cubeToDraw = fullGrid;
+            subplot(2, 3, 6); showFace(fullGrid); title("current side: "+currentSide);
+        else
+            subplot(2, 3, 6); title("current side: "+currentSide);
         end
-        subplot(2, 3, 6); showFace(fullGrid); title("current side: "+currentSide);
+%         if size(find(stickerMask==1), 1) ~= 0
+            
+%         end
     end
 end
 
@@ -54,7 +62,7 @@ function [mask] = kMeansImageToStickerMask(L)
         cc = bwlabel(L==i);
         for j=1:max(max(cc))
             count = sum(sum(cc==j));
-            if count > 500 && count < 3000
+            if count > 100 && count < 1500
                 s = squareness(cc==j);
                 if s > .85 && s < 1.3
                     mask(cc==j) = 1;
@@ -92,6 +100,7 @@ function keyPressed(hObject, event)
     global currentSide;
     global keepLooping;
     global paused;
+    global cubeToDraw;
     switch event.Key
         case 'rightarrow'
             currentSide = min(currentSide+1, 6);
@@ -100,7 +109,8 @@ function keyPressed(hObject, event)
             currentSide = max(currentSide-1, 1);
             disp("new current side: " + currentSide);
         case 'return'
-            keepLooping = false;
+            disp(Solve45(cubeToDraw));
+%             keepLooping = false;
         case 'space'
             paused = ~paused;
     end

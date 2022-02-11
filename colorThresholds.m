@@ -22,7 +22,6 @@ while keepLooping
     drawnow
 
     if ~paused
-    
     %     original_image = imread("our_images/cube3.png");
         original_image = cam.snapshot;
         original_image = imresize(original_image, 0.1);
@@ -30,29 +29,23 @@ while keepLooping
         [L,Centers] = imsegkmeans(original_image,13);
         image = label2rgb(L, im2double(Centers));
     
-        LSTImage = rgb2lst(image);
-    
         stickerMask = kMeansImageToStickerMask(L);
     
         onlyStickersImage = cropImage(image, ~stickerMask);
         
-        subplot(2, 3, 1); imshow(original_image); title("original image");
-        subplot(2, 3, 2); imshow(image); title("k-means");
-        subplot(2, 3, 3); imshow(LSTImage); title("LST");
-        subplot(2, 3, 4); imshow(stickerMask); title("sticker mask");
-        subplot(2, 3, 5); imshow(onlyStickersImage); title("only stickers");
+%         subplot(2, 3, 1); imshow(original_image); title("original image");
+        subplot(1, 3, 1); imshow(image); title("k-means");
+%         subplot(2, 3, 4); imshow(stickerMask); title("sticker mask");
+        subplot(1, 3, 2); imshow(onlyStickersImage); title("only stickers");
         
-        grid = stickersToGrid(bwlabel(stickerMask), LSTImage);
+        grid = stickersToGrid(bwlabel(stickerMask), image);
         if grid(1) ~= "-"
             fullGrid(:,:,currentSide) = grid;
             cubeToDraw = fullGrid;
-            subplot(2, 3, 6); showFace(fullGrid); title("current side: "+currentSide);
+            subplot(1, 3, 3); showFace(fullGrid); title("current side: "+currentSide);
         else
-            subplot(2, 3, 6); title("current side: "+currentSide);
+            subplot(1, 3, 3); title("current side: "+currentSide);
         end
-%         if size(find(stickerMask==1), 1) ~= 0
-            
-%         end
     end
 end
 
@@ -62,7 +55,7 @@ function [mask] = kMeansImageToStickerMask(L)
         cc = bwlabel(L==i);
         for j=1:max(max(cc))
             count = sum(sum(cc==j));
-            if count > 100 && count < 1500
+            if count > 100 && count < 500
                 s = squareness(cc==j);
                 if s > .85 && s < 1.3
                     mask(cc==j) = 1;

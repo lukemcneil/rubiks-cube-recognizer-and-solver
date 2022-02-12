@@ -52,22 +52,22 @@ while keepLooping
     
         onlyStickersImage = cropImage(image, ~stickerMask);
         
-%         subplot(2, 3, 1); imshow(original_image); title("original image");
-        subplot(1, 3, 1); imshow(image); title("k-means");
-%         subplot(2, 3, 4); imshow(stickerMask); title("sticker mask");
-        subplot(1, 3, 2); imshow(onlyStickersImage); title("only stickers");
+        subplot(1, 4, 1); imshow(image); title("k-means");
+        subplot(1, 4, 2); imshow(onlyStickersImage); title("only stickers");
         
         grid = stickersToGrid(bwlabel(stickerMask), image, currentSide);
         if grid(1) ~= "-"
             fullGrid(:,:,currentSide) = grid;
             cubeToDraw = fullGrid;
-            subplot(1, 3, 3); rubplot(color2idx(fullGrid)); title("current side: "+currentSide); 
+            subplot(1, 4, 3); rubplot(color2idx(fullGrid)); title("current side: "+currentSide); 
             view(viewAngle(1, currentSide), viewAngle(2, currentSide));
         elseif lastSide ~= currentSide
             lastSide = currentSide;
-            subplot(1, 3, 3); rubplot(color2idx(fullGrid)); title("current side: "+currentSide);
+            subplot(1, 4, 3); rubplot(color2idx(fullGrid)); title("current side: "+currentSide);
             view(viewAngle(1, currentSide), viewAngle(2, currentSide));
         end
+        
+        subplot(1, 4, 4); showStickerColors(); title("colors");
     end
 end
 

@@ -81,16 +81,6 @@ function [mask] = kMeansImageToStickerMask(L)
     end
 end
 
-function [lstImage] = rgb2lst(image)
-    R = double(image(:,:,1))/255;
-    G = double(image(:,:,2))/255;
-    B = double(image(:,:,3))/255;
-    L = (R + G + B) / 3;
-    S = ((R - B) + 1) / 2;
-    T = ((R - 2*G + B) + 2) / 4;
-    lstImage = cat(3, L, S, T);
-end
-
 function [croppedImage] = cropImage(image, mask)
     r = image(:,:,1);
     g = image(:,:,2);

@@ -1,12 +1,7 @@
-function [grid] = stickersToGrid(stickerMask, image)
+function [grid] = stickersToGrid(stickerMask, image, currentSide)
+    global stickerColors;
+
     colors = ["R" "G" "B" "O" "W" "Y"];
-    stickerColors = zeros(6, 3);
-    stickerColors(1,:) = [123, 38, 16];
-    stickerColors(2,:) = [12, 120, 84];
-    stickerColors(3,:) = [25, 50, 190];
-    stickerColors(4,:) = [213, 106, 40];
-    stickerColors(5,:) = [160, 180, 220];
-    stickerColors(6,:) = [165, 150, 10];
 
     centroids = ones(9, 3)*-1;
     
@@ -16,6 +11,10 @@ function [grid] = stickersToGrid(stickerMask, image)
             [xs, ys] = find(stickerMask == i);
             color = double(squeeze(image(xs(1), ys(1), :)));
             distances = zeros(1, 6);
+            if i==5
+                global centerColor;
+                centerColor = color;
+            end
             for j=1:6
                 r2 = (color(1) - stickerColors(j, 1))^2;
                 g2 = (color(2) - stickerColors(j, 2))^2;

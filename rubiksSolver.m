@@ -17,6 +17,18 @@ keepLooping = true;
 global paused;
 paused = false;
 
+global centerColor;
+centerColor = [0 0 0];
+
+global stickerColors;
+stickerColors = zeros(6, 3);
+stickerColors(1,:) = [123, 38, 16];
+stickerColors(2,:) = [12, 120, 84];
+stickerColors(3,:) = [25, 50, 190];
+stickerColors(4,:) = [213, 106, 40];
+stickerColors(5,:) = [160, 180, 220];
+stickerColors(6,:) = [165, 150, 10];
+
 viewAngle = [109.5 156.5 254 -15.5 113 68
              17.5 20.5 23.5 25.5 53 -70];
 
@@ -33,7 +45,7 @@ while keepLooping
 %         %original_image(original_image(:,:,2) > 1) = 1;
 %         original_image = uint8(hsv2rgb(original_image)*255);
         
-        [L,Centers] = imsegkmeans(original_image,13);
+        [L,Centers] = imsegkmeans(original_image,17);
         image = label2rgb(L, im2double(Centers));
     
         stickerMask = kMeansImageToStickerMask(L);
@@ -45,7 +57,7 @@ while keepLooping
 %         subplot(2, 3, 4); imshow(stickerMask); title("sticker mask");
         subplot(1, 3, 2); imshow(onlyStickersImage); title("only stickers");
         
-        grid = stickersToGrid(bwlabel(stickerMask), image);
+        grid = stickersToGrid(bwlabel(stickerMask), image, currentSide);
         if grid(1) ~= "-"
             fullGrid(:,:,currentSide) = grid;
             cubeToDraw = fullGrid;
@@ -70,9 +82,9 @@ function [mask] = kMeansImageToStickerMask(L)
         cc = bwlabel(L==i);
         for j=1:max(max(cc))
             count = sum(sum(cc==j));
-            if count > 100 && count < 500
+            if count > 70 && count < 250
                 s = squareness(cc==j);
-                if s > .85 && s < 1.3
+                if s > 0.8
                     mask(cc==j) = 1;
                     1;
                 end
@@ -99,6 +111,8 @@ function keyPressed(~, event)
     global keepLooping;
     global paused;
     global cubeToDraw;
+    global centerColor;
+    global stickerColors;
     switch event.Key
         case 'rightarrow'
             currentSide = min(currentSide+1, 6);
@@ -108,7 +122,6 @@ function keyPressed(~, event)
             disp("new current side: " + currentSide);
         case 'return'
             disp(Solve45(color2idx(cubeToDraw)));
-%             keepLooping = false;
         case 'space'
             paused = ~paused;
             if paused
@@ -118,5 +131,17 @@ function keyPressed(~, event)
             end
         case {'q', 'escape'}
             keepLooping = false;
+        case '1'
+            stickerColors(1,:) = centerColor;
+        case '2'
+            stickerColors(2,:) = centerColor;
+        case '3'
+            stickerColors(3,:) = centerColor;
+        case '4'
+            stickerColors(4,:) = centerColor;
+        case '5'
+            stickerColors(5,:) = centerColor;
+        case '6'
+            stickerColors(6,:) = centerColor;
     end
 end

@@ -40,10 +40,6 @@ while keepLooping
     %     original_image = imread("our_images/cube3.png");
         original_image = cam.snapshot;
         original_image = imresize(original_image, 128/size(original_image,2));
-%         original_image = rgb2hsv(original_image);
-%         original_image(:,:,2) = 1.1*original_image(:,:,2);
-%         %original_image(original_image(:,:,2) > 1) = 1;
-%         original_image = uint8(hsv2rgb(original_image)*255);
         
         [L,Centers] = imsegkmeans(original_image,17);
         image = label2rgb(L, im2double(Centers));

@@ -121,7 +121,12 @@ function keyPressed(~, event)
             currentSide = max(currentSide-1, 1);
             disp("new current side: " + currentSide);
         case 'return'
-            disp(Solve45(color2idx(cubeToDraw)));
+            solution = Solve45(color2idx(cubeToDraw));
+            for i=1:size(solution, 2)
+                fprintf("%s ", string(solution(i)));
+            end
+            fprintf("\n");
+            animateMoves(color2idx(cubeToDraw), solution);
         case 'space'
             paused = ~paused;
             if paused
